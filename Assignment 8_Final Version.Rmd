@@ -1,0 +1,184 @@
+---
+title: "R Notebook - Gapminder ggplot"
+output: html_notebook
+---
+
+This R Notebook was created to guide you manipulate and creat visual representations of your data.
+
+**Installing packages and Loading libraries**** 
+
+If you already have the packages intalled you **do not** need to re-intall them.
+
+Those are the codes to intall the packages:
+
+install.packages ("tidyverse")
+
+install.packages ("gapminder")
+
+Load the libraries for **tidyverse**, which is a set of packages designed to facilitate install and load core packages in a single command. 
+
+```{r}
+
+library (tidyverse)
+
+```
+
+The second library that will be loaded is the **gapminder**, which is a package that contains the information that we want to work on. 
+
+```{r}
+library(gapminder)
+```
+
+In order to manipulate the datasets the **dplyr** package needs to be intalled. 
+Again, if you already have it installed there is no need to do it. 
+
+install.packages ("dplyr")
+
+In this way, the dplyr library needs to be loaded. 
+
+```{r}
+library(dplyr)
+```
+
+To get the graphics about the information that we want to manipulate the ggplot2 package needs to be intalled.
+
+Reminder: If it is already installed, just move on to the next setp. 
+
+install.packages ("ggplot2")
+
+Load the ggplot 2 library using the following command. 
+
+```{r}
+library(ggplot2)
+```
+
+
+**Orginizing data**
+
+Let's organizee the gapminder data on a table, so we can have a better vision of our total data.
+
+```{r}
+gapminder_table <- gapminder
+gapminder_table
+```
+
+To summarize the data, let's use the **summary()** function.
+
+
+```{r}
+summary(gapminder_table)
+```
+
+**_Creating a Histogram log-transformed for Population data_**
+
+The histogram will be created from the gapminder_table data. However, the population data is so large that we should transform it in log to have better reading. 
+
+_NOTE: the command piece "gapminder$"is to indicate to the program where I want it to get the information_
+
+The visual of graphs are important, so we can include on our comand the instructions to have a title (main=) and proper lables for each axis (xlab=;ylab=).
+
+
+```{r}
+hist(log(gapminder_table$pop), 
+     main = "Histogram of Population data log-transformed",
+     xlab = "Population",
+     ylab = "Frequency")
+```
+
+
+**_Scatterploting Life Expectancy vs. GDP per capita (Log transformed)_**
+
+To creat a plot in order to correlate the life expectancy and GDP per capita we will use the following commands.
+
+_NOTE: the command piece "gapminder$"is to indicate to the program where I want it to get the information_
+
+Also, we can format our scatterplot including title (main) and axis lables (xlab and ylab). 
+
+```{r}
+plot(log(gapminder_table$gdpPercap), gapminder_table$lifeExp,
+     main= "Life Expectancy vs GDP per capita",
+     xlab= "GDP per capita (Log-transformed)",
+     ylab = "Life Expectancy")
+ 
+```
+
+
+**_ttest of life expectancy differences_**
+
+Let's suppose that we want to work with the data from South Africa and Ireland. So, I'll creat a new data frame called SFXI (South Africa vs Ireland) to perform the ttest of life expectancy between those two countries. 
+
+```{r}
+SFXI <- gapminder_table %>%
+  select(country,lifeExp) %>%
+    filter (country== "South Africa"|
+            country== "Ireland")
+t.test(data=SFXI, lifeExp ~ country)
+
+```
+
+
+**_Single plot Life Expectancy vs. GDP Per Capita_**
+
+Load the ggplot2 library.
+
+```{r}
+library(ggplot2)
+```
+
+To obtaine a single plot Life Expectancy vs GDP Per Catpita, in which the continents are differentiated by colors and the population by dot-size, use the folowing command. 
+
+Also, in order to make the differences between continents more visible, we will use the gemo_smooth function. 
+
+The graph design can be manipulated using the functions xlab, ylab, and ggtitle to include the labels that are more appropiate. Also, functions such as theme_bw (to have a clean background) and theme(plot.title) can be useful to get a cleaner design. 
+
+```{r}
+gapminder_table %>%
+  filter(gdpPercap <50000) %>%
+  ggplot(aes(x= log(gdpPercap), y=lifeExp, col=continent, size=pop))+
+  geom_point(alpha=0.3)+
+  geom_smooth(method = lm)+
+  ylab("Life Expectancy")+
+  xlab("GDP per capita(Log-transformed)")+
+  ggtitle("Life Expectancy vs GDP per capita")+
+  theme_bw()+
+  theme(plot.title = element_text(size = 25, hjust = 0.5))
+```
+
+
+**_Faceted scatterplot Life Expectancy vs GDP Per Capita by Continent_**
+
+To add a new layer of analysis on  your plots, for example the contrast between life expectancy vs GDP Per Capita on each continet based on the years, we can use the function facet to separate the continents. The design functions already decribed can be used on this section as well. 
+
+```{r}
+gapminder_table %>%
+  filter(gdpPercap <50000) %>%
+  ggplot(aes(x= log(gdpPercap), y=lifeExp, col=year, size=pop))+
+  geom_point(alpha=0.3)+
+  geom_smooth(method = lm)+
+  facet_wrap(~continent)+
+  ylab("Life Expectancy")+
+  xlab("GDP per capita(Log-transformed)")+
+  ggtitle("Life Expectancy vs GDP per capita")+
+  theme_bw()+
+  theme(plot.title = element_text(size = 25, hjust = 0.5))
+```
+
+
+**_Linear Model test of life expectancy by GDP Per Capita and population_**
+
+In order to get a Linear regration that correlates life expectancy, gdp per capita and population, we use the folowing command. 
+
+_NOTE: the command piece "gapminder$"is to indicate to the program where I want it to get the information_
+
+
+```{r}
+lm(gapminder_table$lifeExp ~ gapminder_table$gdpPercap+gapminder_table$pop)
+```
+
+To have a summary of the linear regration, we use the following command. 
+
+```{r}
+summary(lm(gapminder_table$lifeExp ~ gapminder_table$gdpPercap+gapminder_table$pop))
+```
+
+
